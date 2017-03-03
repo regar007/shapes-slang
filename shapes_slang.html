@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="shapes_slang.js"></script>
+<!-- 	<script src="slang.js"></script> -->
+</head>
+<body>
+	<div style="width: 100%; overflow: hidden;">
+		<div style="width: 99%; height: 40px; float: left; border: 1px solid #d3d3d3; padding-top: 5px">
+			<tag>
+				<input id="myInstr" type="text" style="font-size:24px; padding-top: 1px;" placeholder="Enter instruction" name="Instructions" onkeydown="addToStack(event)"/>							
+			</tag>
+			<tag style="display: none;">
+				<label for="or" style="margin-left: 10%;">OR</label>
+				<select id="task" style="font-size: 24px; padding: 1px; margin-left: 10%;">
+					<option>add</option>
+					<option>pin</option>
+					<option>move</option>
+					<option>rotate</option>
+					<option>bind</option>
+					<option>stop</option>
+					<option>remove</option>
+				</select>
+				<select id="type" style="font-size: 24px; padding: 1px;">
+					<option>rect</option>
+					<option>circle</option>
+				</select>
+				<select id="nameSelect" style="display: none; font-size: 24px; padding: 1px; width: 70px">
+					<option></option>
+				</select>
+				<input id="nameInput" style="font-size: 24px; padding: 1px; width: 70px">
+				<input id="xLoc" type="text" placeholder="X" style="font-size:24px; padding-top: 1px; width: 70px;">
+				<input id="yLoc" type="text" placeholder="Y" style="font-size:24px; padding-top: 1px; width: 70px;">
+				<input id="w_or_r" type="text" placeholder="Width" style="font-size:24px; padding-top: 1px; width: 70px;">
+				<input id="h" type="text" placeholder="Height" style="font-size:24px; padding-top: 1px; width: 70px;">
+				<button type="submit" style="font-size:24px;padding-top: 1px;width: 70px;outline: none;cursor: pointer;color: #FFF;border-radius: 0.25rem;background-color: #0BE;">Draw</button>
+			</tag>
+		</div>
+	</div>
+	<div style="width: 100%; overflow: hidden;">
+	    <div style="width: 99%; height: 100%; float: left; border: 1px solid #d3d3d3;">
+	    	<svg  id="svgHolder" xmlns="http://www.w3.org/2000/svg" width="1366px" height="760px">
+		    </svg>
+		</div>
+	    <div id="myData" style="margin-left: 620px;"> 
+	    </div>
+	</div>
+
+</body>
+</html>
