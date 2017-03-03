@@ -1,7 +1,7 @@
 # Shapes_Slang
 To create a functioning skeleton.
 
-[link to site](https://shapes-slang.herokuapp.com/)
+https://shapes-slang.herokuapp.com/
 
 OR
 
