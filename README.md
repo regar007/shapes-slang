@@ -1,6 +1,10 @@
 # Shapes_Slang
 To create a functioning skeleton.
 
+[link to site](https://shapes-slang.herokuapp.com/)
+
+OR
+
 ### Setup:
 * download shapes_slang.html and shapes_slang.js in same folder.
 
