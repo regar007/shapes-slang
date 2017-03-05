@@ -11,25 +11,25 @@ let symbol = function (name) {return {t: 'symbol', v: name}};
 
 // values includes (data, program)
 let run = function(env, program, pc, stack){
-	for(; pc < program.length; ++pc ){
-		let instr = program[pc];
+    for(; pc < program.length; ++pc ){
+        let instr = program[pc];
 
-		if(instr.t == 'word'){
-			instr = lookup(env, instr);
-		}
+        if(instr.t == 'word'){
+            instr = lookup(env, instr);
+        }
 
-		switch(instr.t){
-			case 'prim':
-				stack = apply(instr, stack);
-				break;
+        switch(instr.t){
+            case 'prim':
+                stack = apply(instr, stack);
+                break;
 
-			default:
-				push(stack, instr);
-				break;
-		}
-	}
+            default:
+                push(stack, instr);
+                break;
+        }
+    }
 
-	return stack;
+    return stack;
 }
 
 let mk_env = function () {
@@ -239,9 +239,6 @@ tests.distance2 = function (stack) {
 
 // running my show
 let svgns = "http://www.w3.org/2000/svg";
-
-let circle = function(x, y, r, color){return {t:'circle', cx: x, cy: y, r: r, fill: color, rot: number(0), bindings: {parent: [], children: []}}};
-let rectangle = function(x, y, width, height, color){return {t:'rect', x: x, y: y, width: width, height: height, fill: color, rot: number(0), bindings : {parent: [], children: []}}};
 
 stddefs(function (env) {
     define(env, 'show', prim(function (stack) {
@@ -501,40 +498,6 @@ stddefs(function (env) {
         return stack;
     }));
 
-
-    define(env, 'add', prim(function (stack) {
-        let id = pop(stack).v, shape = pop(stack);
-        let attr = Object.keys(shape);
-
-		if(shape.t == 'circle'){	
-            let circle = document.getElementById(id);
-            if(!circle){
-                circle = document.createElementNS(svgns, shape.t); 
-            }
-	  	    circle.setAttributeNS(null, 'id', id);
-            for(var i = 1; i < attr.length - 3; i++ ){
-                circle.setAttributeNS(null, attr[i], shape[attr[i]].v);
-            }
-			circle.setAttributeNS(null, 'stroke', shape.fill.v);
-			circle.setAttributeNS(null, 'stroke-width', 2);
-			document.getElementById('svgHolder').appendChild(circle);		
-		}else if(shape.t == 'rect'){
-	  	    let rect = document.getElementById(id);
-            if(!rect){
-                rect = document.createElementNS(svgns, 'rect');
-            }
-	  	    rect.setAttributeNS(null, 'id', id);
-            for(var i = 1; i < attr.length - 3; i++ ){
-                rect.setAttributeNS(null, attr[i], shape[attr[i]].v);
-            }
-			document.getElementById('svgHolder').appendChild(rect);
-            // let div = document.createElement('span');
-            // div.innerHTML = id;
-            // rect.appendChild(div);            		
-		}
-        return stack;
-    }));
-
     define(env, 'remove', prim(function(stack){
         let id = pop(stack).v;
         let bindings = env[id].bindings;
@@ -648,81 +611,87 @@ stddefs(function (env) {
         }
         return stack;
     }));
+
+    define(env, 'add', prim(function (stack) {
+        let type = pop(stack);
+        let prog = [];
+        prog.push(word(type.v));
+        return run(env, prog, 0, stack);
+    }));
+
+    define(env, 'rect', prim(function (stack) {
+        let sym = pop(stack), x = pop(stack), y = pop(stack), width = pop(stack), height = pop(stack);
+        let obj = {};
+        obj.t = "rect";
+        obj.x = x;       
+        obj.y = y;       
+        obj.width = width;       
+        obj.height = height;       
+        obj.fill = "black";
+        obj.rot = number(0);
+        obj.bindings = {parent: [], children: []};       
+
+        let rect = document.getElementById(sym.v);
+        if(!rect){
+            rect = document.createElementNS(svgns, 'rect');
+        }
+        rect.setAttributeNS(null, 'id', sym.v);
+        rect.setAttributeNS(null, 'x', x.v);
+        rect.setAttributeNS(null, 'y', y.v);
+        rect.setAttributeNS(null, 'width', width.v);
+        rect.setAttributeNS(null, 'height', height.v);
+        rect.setAttributeNS(null, 'fill', "black");
+        document.getElementById('svgHolder').appendChild(rect);
+        return run(env, [word('def')], 0, [obj, symbol(sym.v)]);
+    }));
+
+    define(env, 'circle', prim(function (stack) {
+        let sym = pop(stack), x = pop(stack), y = pop(stack), r = pop(stack);
+        let obj = {};
+        obj.t = "circle";
+        obj.cx = x;       
+        obj.cy = y;       
+        obj.r = r;       
+        obj.fill = "black";
+        obj.rot = number(0);
+        obj.bindings = {parent: [], children: []};       
+
+        let cir = document.getElementById(sym.v);
+        if(!cir){
+            cir = document.createElementNS(svgns, 'circle');
+        }
+        cir.setAttributeNS(null, 'id', sym.v);
+        cir.setAttributeNS(null, 'cx', x.v);
+        cir.setAttributeNS(null, 'cy', y.v);
+        cir.setAttributeNS(null, 'r', r.v);
+        cir.setAttributeNS(null, 'fill', "black");
+        document.getElementById('svgHolder').appendChild(cir);
+        return run(env, [word('def')], 0, [obj, symbol(sym.v)]);
+    }));
+
 });
 
 let instr_parser = function(str, prog){
-	let s = str.split(" ");
-    let inputs = str.replace(/^\s+|\s+$/g, '').match( /[-]{0,1}[\d.]*[\d]+/g, '');
-    if(inputs != null){
-        inputs = inputs.map(parseFloat);
-    }
-
-	if(s[0] === "add"){
-    	if(s[1] === "circle"){
-            // create a primitive circle which holds the data for new circle
-			prog.push(circle(number(inputs[0]), number(inputs[1]), number(inputs[2]), string('black')));
-		}else if(s[1] === "rect"){
-            // create a primitive rectangle which holds the data for new rectangle
-			prog.push(rectangle(number(inputs[0]), number(inputs[1]), number(inputs[2]), number(inputs[3]), string('black')));
-		}
-		prog.push(symbol(s[2]));
-		prog.push(word('def'));
-		prog.push(word(s[2]));
-        prog.push(string(s[2]));
-		prog.push(word(s[0]));
-	}
-	else if(s[0] === 'remove'){
-        // removes a shape (remove "name" ) 
-		prog.push(string(s[1]));
-		prog.push(word(s[0]));
-	}
-	else if(s[0] === 'pin'){
-        // assume if we are using pin then some shape already exists and
-        // we are trying to move it..
-        prog.push(number(parseFloat(s[3])));
-        prog.push(number(parseFloat(s[2])));
-        prog.push(string(s[1]));
-        prog.push(word(s[0]));
-
-    }else if(s[0] === 'rotate'){
-        for (var i = inputs.length - 1; i >= 0; i--) {
-            prog.push(number(inputs[i]));
+    let s = str.split(" ");
+    // let inputs = str.replace(/^\s+|\s+$/g, '').match( /[-]{0,1}[\d.]*[\d]+/g, '');
+    // if(inputs != null){
+    //     inputs = inputs.map(parseFloat);
+    // }
+    for (var i = s.length - 1; i >= 1; i--) {
+        let ele = s[i];
+        if(ele === ''){
+            continue;
         }
-        prog.push(string(s[1]));
-        prog.push(word(s[0]));
+        let v = parseFloat(ele);
+        if(!isNaN(v) || v){
+            prog.push(number(v));     
+        }else{
+            prog.push(string(ele));
+        }
     }
-    else if(s[0] === 'stop'){
-        prog.push(string(s[1]));
-        prog.push(word(s[0]));
-    }else if(s[0] == 'move'){
-        let xAcc = parseFloat(s[2]);
-        let yAcc = parseFloat(s[3])
-        prog.push(number(yAcc));
-        prog.push(number(xAcc));
-        
-        prog.push(string(s[1]));
-        prog.push(word(s[0]));
-    }else if(s[0] === 'proj'){
-        prog.push(number(s[3]));
-        prog.push(number(s[2]));
-        prog.push(string(s[1]));
-        prog.push(word(s[0]));
-    }else if(s[0] === 'modify'){
-        prog.push(number(parseFloat(s[5])))
-        prog.push(number(parseFloat(s[4])))
-        prog.push(number(parseFloat(s[3])))
-        prog.push(number(parseFloat(s[2])))
-        prog.push(string(s[1]))
-        prog.push(word(s[0]));
-        prog.push(word('add'))
-    }else if(s[0] === 'bind'){
-        prog.push(number(inputs[1]));
-        prog.push(number(inputs[0]));
-        prog.push(string(s[1]));
-        prog.push(string(s[2]));
-        prog.push(word(s[0]));
-    }
-	return prog;
+    prog.push(word(s[0]));
+
+    return prog;
 }
 
 let env = load_stdlib(mk_env());
@@ -730,8 +699,8 @@ let env = load_stdlib(mk_env());
 tests.myShow = function(prog){
 
     let program = prog || [
-    	string("hello folks! Open shapes_slang.html to play with the framework."),
-    	word('show'),
+        string("hello folks! Open shapes_slang.html to play with the framework."),
+        word('show'),
     ];
 
     // return run(env, p2, 0, [circle(10), rectangle(100, 150)]);
@@ -741,14 +710,12 @@ tests.myShow = function(prog){
 
 let stack1 = [];
 function addToStack(event){
-	if(event.keyCode == 13) {
-		 let str = document.getElementById(event.target.id).value;
-		 let prog = instr_parser(str, []);
-		 tests.myShow(prog);
+    if(event.keyCode == 13) {
+         let str = document.getElementById(event.target.id).value;
+         let prog = instr_parser(str, []);
+         tests.myShow(prog);
     }
 }
-
-
 
 
 
