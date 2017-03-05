@@ -311,9 +311,9 @@ stddefs(function (env) {
         let shape = env[id];
         let attr = Object.keys(shape);
 
-        let p = shape.bindings.parent;
+        var p = shape.bindings.parent;
         if(p.length == 0){
-            p.push(id);
+            p = [id];
         }
         for(var i = 0; i < p.length; i++){
             let currP = env[p[i]];
@@ -487,10 +487,10 @@ stddefs(function (env) {
         let id = pop(stack).v;
 
         // if parent exist for this shape then stop parents movements.
-        let p = env[id].bindings.parent;
-        if(p.length > 0){
-            id = p[0];
-        }
+        // let p = env[id].bindings.parent;
+        // if(p.length > 0){
+        //     id = p[0];
+        // }
 
         clearInterval(env[id].accLoop);
         clearInterval(env[id].transLoop[0]);
