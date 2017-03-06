@@ -524,7 +524,7 @@ stddefs(function (env) {
             }
             env[p[i]].bindings.children = c;
 
-            document.getElementById('svgHolder').appendChild(document.getElementById(p[i]));
+            document.getElementById('svgHolder').appendChild(document.getElementById(p[i] + 'g'));
         }
         if(p.length > 0){
             htmlParentTag = tempId + id;
@@ -546,15 +546,15 @@ stddefs(function (env) {
             env[c[i]].x.v = env[c[i]].x.v + env[id].x.v;
             env[c[i]].y.v = env[c[i]].y.v + env[id].y.v;
 
-            document.getElementById('svgHolder').appendChild(document.getElementById(c[i]));
+            document.getElementById('svgHolder').appendChild(document.getElementById(c[i] + 'g'));
         }
 
         delete env[id];
-        let cShape = document.getElementById(id);
+        let cShape = document.getElementById(id + 'g');
         let tag = document.getElementById(htmlParentTag);
         if(htmlParentTag !== 'svgHolder'){
-            tag.removeChild(cShape);       
-            tag.parentNode.removeChild(tag);
+            // tag.removeChild(cShape);       
+            tag.parentNode.parentNode.removeChild(tag.parentNode);
         }
         return stack;
     }));
@@ -648,8 +648,13 @@ stddefs(function (env) {
         obj.bindings = {parent: [], children: []};       
 
         let rect = document.getElementById(sym.v);
+        let g = document.getElementById(sym.v + 'g');
         if(!rect){
             rect = document.createElementNS(svgns, 'rect');
+            g = document.createElementNS(svgns, 'g');
+            g.setAttributeNS(null, 'id', sym.v+'g');
+            g.setAttribute( 'transform', "rotate(0, 0 , 0)");
+            document.getElementById('svgHolder').appendChild(g);
         }
         rect.setAttributeNS(null, 'id', sym.v);
         rect.setAttributeNS(null, 'x', x.v);
@@ -658,11 +663,7 @@ stddefs(function (env) {
         rect.setAttributeNS(null, 'height', height.v);
         rect.setAttributeNS(null, 'fill', "black");
         rect.setAttribute( 'transform', "rotate(0, 0 , 0)");
-        var g = document.createElementNS(svgns, 'g');
-        g.setAttributeNS(null, 'id', sym.v+'g');
-        g.setAttribute( 'transform', "rotate(0, 0 , 0)");
         g.appendChild(rect);
-        document.getElementById('svgHolder').appendChild(g);
         return run(env, [word('def')], 0, [obj, symbol(sym.v)]);
     }));
 
@@ -678,8 +679,13 @@ stddefs(function (env) {
         obj.bindings = {parent: [], children: []};       
 
         let cir = document.getElementById(sym.v);
+        let g = document.getElementById(sym.v + 'g');
         if(!cir){
             cir = document.createElementNS(svgns, 'circle');
+            g = document.createElementNS(svgns, 'g');
+            g.setAttributeNS(null, 'id', sym.v+'g');
+            g.setAttribute( 'transform', "rotate(0, 0 , 0)");
+            document.getElementById('svgHolder').appendChild(g);
         }
         cir.setAttributeNS(null, 'id', sym.v);
         cir.setAttributeNS(null, 'cx', x.v);
@@ -687,7 +693,7 @@ stddefs(function (env) {
         cir.setAttributeNS(null, 'r', r.v);
         cir.setAttributeNS(null, 'fill', "black");
         cir.setAttribute( 'transform', "rotate(0,"+ x.v +","+ y.v+")");
-        document.getElementById('svgHolder').appendChild(cir);
+        g.appendChild(cir);
         return run(env, [word('def')], 0, [obj, symbol(sym.v)]);
     }));
 
