@@ -319,6 +319,7 @@ stddefs(function (env) {
             let currP = env[p[i]];
             let currEle = document.getElementById(p[i]);
             let currAttr = Object.keys(currP);
+            // translate(currEle, x.v, y.v);
             currEle.setAttribute(currAttr[1], x.v);
             currEle.setAttribute(currAttr[2], y.v);
             currEle.setAttribute('transform', "rotate("+ currP.rot.v + ","+ x.v + ","+ y.v +")");
@@ -429,12 +430,18 @@ stddefs(function (env) {
         let id = pop(stack).v, xAcc = pop(stack).v, yAcc = pop(stack).v;
         let c = env[id].bindings.children;
         let gId = id;
+        let p = env[id].bindings.parent;
+        if(p.length > 0){
+            gId = p[0] + gId;
+        }
         if(c.length > 0){
             for(var i = 0; i < c.length; c++){
                 gId += c[i];
             }
         }
-        let svg = document.getElementById(id);
+        let svg = document.getElementById(gId + 'g');
+        // translate(svg, xAcc, yAcc);
+        // return;
         let shape = env[id];
         let attr = Object.keys(shape);
         let transX = (xAcc > 0) ? 1 : - 1, transY = (yAcc > 0) ? 1: -1;
@@ -442,8 +449,9 @@ stddefs(function (env) {
         if(stack.length === 0){
             let transXLoop = (xAcc === 0) ? null : setInterval(function(){
                 let X = env[id][attr[1]].v + transX;
-                svg.setAttributeNS(null, attr[1], X);
-                env[id][attr[1]].v = X;
+                translate(svg, transX, 0);
+                // svg.setAttributeNS(null, attr[1], X);
+                //env[id][attr[1]].v = X;
                 // let translateStr = svg.getAttribute("transform");
                 // let re = /\((.*)\)/i;
                 // let x = translateStr.match(re)[1].split(',').map(parseFloat);
@@ -456,13 +464,14 @@ stddefs(function (env) {
                     let renderProgram = [];
                     renderProgram.push(string(b[i]));
                     renderProgram.push(word('render'));
-                    run(env, renderProgram, 0, []); 
+                    // run(env, renderProgram, 0, []); 
                 }
             }, 1000 / Math.abs(xAcc));
             let transYLoop = (yAcc === 0) ? null : setInterval(function(){
                 let Y = env[id][attr[2]].v + transY;
-                svg.setAttributeNS(null, attr[2], Y);
-                env[id][attr[2]].v = Y; 
+                translate(svg, 0, transY);
+                // svg.setAttributeNS(null, attr[2], Y);
+                //env[id][attr[2]].v = Y; 
 
                 // render binded shapes for current shape
                 let b = shape.bindings.children;
@@ -470,7 +479,7 @@ stddefs(function (env) {
                     let renderProgram = [];
                     renderProgram.push(string(b[i]));
                     renderProgram.push(word('render'));
-                    run(env, renderProgram, 0, []); 
+                    // run(env, renderProgram, 0, []); 
                 }
             }, 1000 / Math.abs(yAcc));
             if(env[id].transLoop && env[id].transLoop.length > 0){
@@ -551,7 +560,7 @@ stddefs(function (env) {
     }));
 
     define(env, 'bind', prim(function(stack){
-        let s1 = pop(stack), s2 = pop(stack);
+        let s2 = pop(stack), s1 = pop(stack);
         let x = pop(stack), y = pop(stack);
 
         let parent = env[s1.v], child = env[s2.v];
@@ -573,9 +582,15 @@ stddefs(function (env) {
             g.setAttributeNS(null, "stroke", "green");
             g.setAttributeNS(null, "fill", "black");
             g.setAttributeNS(null, "stroke-width", 5);
-            document.getElementById('svgHolder').appendChild(g);
-            g.appendChild(document.getElementById(s1.v));
-            g.appendChild(document.getElementById(s2.v));
+
+            let tg = document.createElementNS(svgns, "g");
+            tg.setAttributeNS(null, 'id', ""+s1.v + s2.v + 'g');
+            tg.setAttribute( 'transform', "rotate(0, 0 , 0)");
+            document.getElementById('svgHolder').appendChild(tg);
+            g.appendChild(document.getElementById(s1.v + 'g'));
+            g.appendChild(document.getElementById(s2.v + 'g'));
+            tg.appendChild(g);
+
         }
         
         stack.push(s2);
@@ -594,7 +609,8 @@ stddefs(function (env) {
             let ren = document.getElementById(name.v);
             let x = shape[attr[1]].v, y = shape[attr[2]].v;
             if(b.length > 0){
-                htmlParentTag = ''+ b[0] + name.v;
+                // htmlParentTag = ''+ b[0] + name.v;
+                htmlParentTag = name.v + 'g';
                 let bAttr = Object.keys(env[b[0]]);
                 shape[attr[1]].v += env[b[0]][bAttr[1]].v; 
                 shape[attr[2]].v += env[b[0]][bAttr[2]].v; 
@@ -641,7 +657,12 @@ stddefs(function (env) {
         rect.setAttributeNS(null, 'width', width.v);
         rect.setAttributeNS(null, 'height', height.v);
         rect.setAttributeNS(null, 'fill', "black");
-        document.getElementById('svgHolder').appendChild(rect);
+        rect.setAttribute( 'transform', "rotate(0, 0 , 0)");
+        var g = document.createElementNS(svgns, 'g');
+        g.setAttributeNS(null, 'id', sym.v+'g');
+        g.setAttribute( 'transform', "rotate(0, 0 , 0)");
+        g.appendChild(rect);
+        document.getElementById('svgHolder').appendChild(g);
         return run(env, [word('def')], 0, [obj, symbol(sym.v)]);
     }));
 
@@ -665,6 +686,7 @@ stddefs(function (env) {
         cir.setAttributeNS(null, 'cy', y.v);
         cir.setAttributeNS(null, 'r', r.v);
         cir.setAttributeNS(null, 'fill', "black");
+        cir.setAttribute( 'transform', "rotate(0,"+ x.v +","+ y.v+")");
         document.getElementById('svgHolder').appendChild(cir);
         return run(env, [word('def')], 0, [obj, symbol(sym.v)]);
     }));
@@ -718,4 +740,29 @@ function addToStack(event){
 }
 
 
+function rotate(x, y, xm, ym, a) {
+  var cos = Math.cos,
+    sin = Math.sin,
+
+    a = a * Math.PI / 180, // Convert to radians because that's what
+    // JavaScript likes
+
+    // Subtract midpoints, so that midpoint is translated to origin
+    // and add it in the end again
+    xr = (x - xm) * cos(a) - (y - ym) * sin(a) + xm,
+    yr = (x - xm) * sin(a) + (y - ym) * cos(a) + ym;
+
+  return [xr, yr];
+}
+
+// translate svg element
+function translate( _element , _x , _y )
+{
+  var transform = _element.transform.baseVal.getItem(0);   
+  var mat = transform.matrix;   
+
+  mat = mat.translate( _x, _y );  
+  transform.setMatrix( mat );
+
+}
 
