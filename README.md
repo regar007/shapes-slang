@@ -34,7 +34,11 @@ OR
 
 * Example 7 : "remove a"
 	* This removes 'a' from screen.
+	
+* Example 8 : "add circle b 100 200 20"
+	* This adds a circle named 'b' at location x = 100, y = 200 and radius = 20 on screen.
+	* User can create as many circle as he wants with different names.
 
-* Exmaple 8 : "bind a b 10 20"
+* Exmaple 9 : "bind a b 10 20"
 	* This binds a as a child to b as parent at location relative to b at x = 10 and y = 20.
 	 
